@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -26,8 +27,16 @@ public class MainActivity extends AppCompatActivity {
         books.add("Book 2");
 
         ListView bookList = findViewById(R.id.bookList);
-        BookAdapter adapter = new BookAdapter(this, books);
+        final BookAdapter adapter = new BookAdapter(this, books);
         bookList.setAdapter(adapter);
+
+        bookList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                TextView detailTitle = findViewById(R.id.detailTitle);
+                detailTitle.setText((String) adapter.getItem(position));
+            }
+        });
     }
 
     public class BookAdapter extends BaseAdapter {
