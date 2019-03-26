@@ -25,6 +25,9 @@ public class MainActivity extends AppCompatActivity {
         // TODO: Create string array of book titles
         books.add("Book 1");
         books.add("Book 2");
+        books.add("Book 3");
+        books.add("Book 4");
+        books.add("Book 5");
 
         ListView bookList = findViewById(R.id.bookList);
         final BookAdapter adapter = new BookAdapter(this, books);
