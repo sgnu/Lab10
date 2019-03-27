@@ -2,7 +2,9 @@ package edu.temple.bookcase;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -76,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
                     .commit();
             ViewPager pager = findViewById(R.id.bookPager);
 
-            PageAdapter adapter = new PageAdapter(this, books);
+            PageAdapter adapter = new PageAdapter(manager, this, books);
             pager.setAdapter(adapter);
         }
 
@@ -120,13 +122,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public class PageAdapter extends PagerAdapter {
+    public class PageAdapter extends FragmentPagerAdapter {
         private Context context;
         private ArrayList<String> books;
 
-        public PageAdapter(Context context, ArrayList<String> books) {
+        public PageAdapter(FragmentManager fm, Context context, ArrayList<String> books) {
+            super(fm);
             this.context = context;
             this.books = books;
+        }
+
+        @Override
+        public Fragment getItem(int i) {
+            return BookDetailsFragment.newInstance(books.get(i));
         }
 
         @Override
@@ -134,33 +142,6 @@ public class MainActivity extends AppCompatActivity {
             return books.size();
         }
 
-        @Override
-        public boolean isViewFromObject(@NonNull View view, @NonNull Object o) {
-            return o.getClass() == view.getClass();
-        }
 
-        @Override
-        public Object instantiateItem(ViewGroup container, int position) {
-            LayoutInflater inflater = LayoutInflater.from(context);
-            ViewGroup layout = (ViewGroup) inflater.inflate(R.layout.page_layout, container, false);
-            container.addView(layout);
-            TextView title = findViewById(R.id.pageTitle);
-            title.setText(books.get(position));
-
-            return title;
-        }
-
-        @Override
-        public void destroyItem(ViewGroup container, int position, Object object) {
-            container.removeView((View) object);
-        }
-
-        @Override
-        public int getItemPosition(@NonNull Object object) {
-            return books.indexOf(object);
-        }
-
-        @Override
-        public void finishUpdate(@NonNull ViewGroup container) {}
     }
 }

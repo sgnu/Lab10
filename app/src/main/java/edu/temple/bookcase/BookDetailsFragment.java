@@ -31,14 +31,15 @@ public class BookDetailsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        View inflated = inflater.inflate(R.layout.fragment_book_details, container, false);
 
         if (getArguments() != null) {
             String title = getArguments().getString("bookTitle");
-            TextView titleView = container.findViewById(R.id.detailTitle);
+            TextView titleView = inflated.findViewById(R.id.detailTitle);
             titleView.setText(title);
         }
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_book_details, container, false);
+        return inflated;
     }
 
 }
