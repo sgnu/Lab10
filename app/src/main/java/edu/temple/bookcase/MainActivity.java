@@ -1,18 +1,24 @@
 package edu.temple.bookcase;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -25,36 +31,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        twoPanes = (findViewById(R.id.bookList) != null);
-
-        final FragmentManager manager = getSupportFragmentManager();
-
-        if (twoPanes) {
-            manager.beginTransaction()
-                    .add(R.id.listFrag, new BookListFragment())
-                    .commit();
-            manager.beginTransaction()
-                    .add(R.id.detailFrag, new BookDetailsFragment())
-                    .commit();
-
-            ListView bookList = findViewById(R.id.bookList);
-            final BookAdapter adapter = new BookAdapter(this, books);
-            bookList.setAdapter(adapter);
-
-            bookList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    manager.beginTransaction()
-                            .replace(R.id.detailFrag, BookDetailsFragment.newInstance(books.get(position)))
-                            .commit();
-                }
-            });
-        } else {
-            manager.beginTransaction()
-                    .add(R.id.pagerFragment, new PagerFragment())
-                    .commit();
-        }
-
         // TODO: Create string array of book titles
         books.add("Book 1");
         books.add("Book 2");
@@ -66,6 +42,44 @@ public class MainActivity extends AppCompatActivity {
         books.add("Book 8");
         books.add("Book 9");
         books.add("Book 10");
+
+        twoPanes = (findViewById(R.id.bookList) != null);
+
+        final FragmentManager manager = getSupportFragmentManager();
+
+        if (twoPanes) {
+            manager.beginTransaction()
+                    .add(R.id.listFrag, new BookListFragment())
+                    .addToBackStack(null)
+                    .commit();
+            manager.beginTransaction()
+                    .add(R.id.detailFrag, new BookDetailsFragment())
+                    .addToBackStack(null)
+                    .commit();
+
+            ListView bookList = findViewById(R.id.bookList);
+            BookAdapter adapter = new BookAdapter(this, books);
+            bookList.setAdapter(adapter);
+
+            bookList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    manager.beginTransaction()
+                            .replace(R.id.detailFrag, BookDetailsFragment.newInstance(books.get(position)))
+                            .addToBackStack(null)
+                            .commit();
+                }
+            });
+        } else {
+            manager.beginTransaction()
+                    .add(R.id.pagerFragment, new PagerFragment())
+                    .commit();
+            ViewPager pager = findViewById(R.id.bookPager);
+
+            PageAdapter adapter = new PageAdapter(this, books);
+            pager.setAdapter(adapter);
+        }
+
     }
 
     public class BookAdapter extends BaseAdapter {
@@ -104,5 +118,49 @@ public class MainActivity extends AppCompatActivity {
             bookName.setText(currentItem);
             return convertView;
         }
+    }
+
+    public class PageAdapter extends PagerAdapter {
+        private Context context;
+        private ArrayList<String> books;
+
+        public PageAdapter(Context context, ArrayList<String> books) {
+            this.context = context;
+            this.books = books;
+        }
+
+        @Override
+        public int getCount() {
+            return books.size();
+        }
+
+        @Override
+        public boolean isViewFromObject(@NonNull View view, @NonNull Object o) {
+            return o.getClass() == view.getClass();
+        }
+
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            LayoutInflater inflater = LayoutInflater.from(context);
+            ViewGroup layout = (ViewGroup) inflater.inflate(R.layout.page_layout, container, false);
+            container.addView(layout);
+            TextView title = findViewById(R.id.pageTitle);
+            title.setText(books.get(position));
+
+            return title;
+        }
+
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            container.removeView((View) object);
+        }
+
+        @Override
+        public int getItemPosition(@NonNull Object object) {
+            return books.indexOf(object);
+        }
+
+        @Override
+        public void finishUpdate(@NonNull ViewGroup container) {}
     }
 }
