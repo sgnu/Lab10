@@ -6,9 +6,8 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <fragment
+    <FrameLayout
         android:id="@+id/pagerFragment"
-        android:name="edu.temple.bookcase.PagerFragment"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"
@@ -18,5 +17,12 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <fragment
+            android:id="@+id/fragment"
+            android:name="edu.temple.bookcase.PagerFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
 </android.support.constraint.ConstraintLayout>

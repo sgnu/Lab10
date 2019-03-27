@@ -1,61 +1,58 @@
 package edu.temple.bookcase;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends FragmentActivity {
 
     ArrayList<String> books = new ArrayList<>();
     boolean twoPanes;
+    final FragmentManager manager = getSupportFragmentManager();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // TODO: Create string array of book titles
-        books.add("Book 1");
-        books.add("Book 2");
-        books.add("Book 3");
-        books.add("Book 4");
-        books.add("Book 5");
-        books.add("Book 6");
-        books.add("Book 7");
-        books.add("Book 8");
-        books.add("Book 9");
-        books.add("Book 10");
+        books.add("1984");
+        books.add("Moby Dick");
+        books.add("Divergent");
+        books.add("Cat in the Hat");
+        books.add("Diary of a Wimpy Kid");
+        books.add("Metamorphosis");
+        books.add("The Catcher in the Rye");
+        books.add("Romeo and Juliet");
+        books.add("Pride and Prejudice");
+        books.add("The Art of War");
+        books.add("Sidereus Nuncius");
+        books.add("Cat's Cradle");
 
         twoPanes = (findViewById(R.id.bookList) != null);
 
-        final FragmentManager manager = getSupportFragmentManager();
+        manager.findFragmentByTag("");
 
         if (twoPanes) {
             manager.beginTransaction()
-                    .add(R.id.listFrag, new BookListFragment())
+                    .add(R.id.listContainer, new BookListFragment())
                     .addToBackStack(null)
                     .commit();
             manager.beginTransaction()
-                    .add(R.id.detailFrag, new BookDetailsFragment())
+                    .add(R.id.detailContainer, new BookDetailsFragment())
                     .addToBackStack(null)
                     .commit();
 
@@ -67,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     manager.beginTransaction()
-                            .replace(R.id.detailFrag, BookDetailsFragment.newInstance(books.get(position)))
+                            .replace(R.id.detailContainer, BookDetailsFragment.newInstance(books.get(position)))
                             .addToBackStack(null)
                             .commit();
                 }
