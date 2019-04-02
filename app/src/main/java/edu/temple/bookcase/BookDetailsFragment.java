@@ -19,10 +19,10 @@ public class BookDetailsFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static BookDetailsFragment newInstance(String title) {
+    public static BookDetailsFragment newInstance(MainActivity.Book book) {
         BookDetailsFragment fragment = new BookDetailsFragment();
         Bundle args = new Bundle();
-        args.putString("bookTitle", title);
+        args.putString("bookTitle", book.getTitle());
         fragment.setArguments(args);
 
         return fragment;

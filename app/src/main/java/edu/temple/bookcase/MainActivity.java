@@ -14,13 +14,12 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
 public class MainActivity extends FragmentActivity {
 
-    ArrayList<String> books = new ArrayList<>();
+    ArrayList<Book> books = new ArrayList<>();
     boolean twoPanes;
     final FragmentManager manager = getSupportFragmentManager();
 
@@ -29,18 +28,7 @@ public class MainActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        books.add("1984");
-        books.add("Moby Dick");
-        books.add("Divergent");
-        books.add("Cat in the Hat");
-        books.add("Diary of a Wimpy Kid");
-        books.add("Metamorphosis");
-        books.add("The Catcher in the Rye");
-        books.add("Romeo and Juliet");
-        books.add("Pride and Prejudice");
-        books.add("The Art of War");
-        books.add("Sidereus Nuncius");
-        books.add("Cat's Cradle");
+        books.add(new Book("title", "author", "cover", 1, 202));
 
         twoPanes = (findViewById(R.id.bookList) != null);
 
@@ -81,11 +69,30 @@ public class MainActivity extends FragmentActivity {
 
     }
 
+    public class Book {
+        private String title, author, coverURL;
+        private int id, published;
+
+        public Book(String title, String author, String coverURL, int id, int published) {
+            this.title = title;
+            this.author = author;
+            this.coverURL = coverURL;
+            this.id = id;
+            this.published = published;
+        }
+
+        public String getTitle() { return title; }
+        public String getAuthor() { return author; }
+        public String getCoverURL() { return coverURL; }
+        public int getId() { return id; }
+        public int getPublished() { return published; }
+    }
+
     public class BookAdapter extends BaseAdapter {
         private Context context;
-        private ArrayList<String> books;
+        private ArrayList<Book> books;
 
-        public BookAdapter(Context context, ArrayList<String> books) {
+        public BookAdapter(Context context, ArrayList<Book> books) {
             this.context = context;
             this.books = books;
         }
@@ -96,7 +103,7 @@ public class MainActivity extends FragmentActivity {
         }
 
         @Override
-        public Object getItem(int position) {
+        public Book getItem(int position) {
             return books.get(position);
         }
 
@@ -111,19 +118,19 @@ public class MainActivity extends FragmentActivity {
                 convertView = LayoutInflater.from(context).inflate(R.layout.listview_row, parent, false);
             }
 
-            String currentItem = (String) getItem(position);
+            String title = getItem(position).getTitle();
             TextView bookName = convertView.findViewById(R.id.bookName);
 
-            bookName.setText(currentItem);
+            bookName.setText(title);
             return convertView;
         }
     }
 
     public class PageAdapter extends FragmentPagerAdapter {
         private Context context;
-        private ArrayList<String> books;
+        private ArrayList<Book> books;
 
-        public PageAdapter(FragmentManager fm, Context context, ArrayList<String> books) {
+        public PageAdapter(FragmentManager fm, Context context, ArrayList<Book> books) {
             super(fm);
             this.context = context;
             this.books = books;
