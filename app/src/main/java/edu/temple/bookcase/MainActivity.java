@@ -2,10 +2,12 @@ package edu.temple.bookcase;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -13,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -22,7 +25,6 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -75,13 +77,19 @@ public class MainActivity extends FragmentActivity {
                     .commit();
             ViewPager pager = findViewById(R.id.bookPager);
 
-            pAdapter = new PageAdapter(manager, this, books);
+            pAdapter = new PageAdapter(manager, books);
             pager.setAdapter(pAdapter);
         }
 
+        findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new GetBooksTask().execute(((EditText) findViewById(R.id.editText)).getText().toString());
+            }
+        });
     }
 
-    public class BookAdapter extends BaseAdapter {
+    private class BookAdapter extends BaseAdapter {
         private Context context;
         private ArrayList<Book> books;
 
@@ -124,14 +132,17 @@ public class MainActivity extends FragmentActivity {
         }
     }
 
-    public class PageAdapter extends FragmentPagerAdapter {
-        private Context context;
+    public class PageAdapter extends FragmentStatePagerAdapter {
         private ArrayList<Book> books;
 
-        public PageAdapter(FragmentManager fm, Context context, ArrayList<Book> books) {
+        public PageAdapter(FragmentManager fm, ArrayList<Book> books) {
             super(fm);
-            this.context = context;
             this.books = books;
+        }
+
+        @Override
+        public int getItemPosition(@NonNull Object object) {
+            return super.POSITION_NONE;
         }
 
         @Override
@@ -156,7 +167,7 @@ public class MainActivity extends FragmentActivity {
             try {
                 books.removeAll(books);
                 URL url;
-                if (search.length > 0) {
+                if (search.length > 0 && !search[0].equals("")) {
                     url = new URL("https://kamorris.com/lab/audlib/booksearch.php?search=" + search[0]);
                 } else {
                     url = new URL("https://kamorris.com/lab/audlib/booksearch.php");
