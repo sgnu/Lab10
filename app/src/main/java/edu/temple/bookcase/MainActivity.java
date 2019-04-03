@@ -1,6 +1,7 @@
 package edu.temple.bookcase;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -15,6 +16,15 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 
 public class MainActivity extends FragmentActivity {
@@ -22,13 +32,15 @@ public class MainActivity extends FragmentActivity {
     ArrayList<Book> books = new ArrayList<>();
     boolean twoPanes;
     final FragmentManager manager = getSupportFragmentManager();
+    PageAdapter pAdapter;
+    BookAdapter bAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        books.add(new Book("title", "author", "cover", 1, 202));
+        new GetBooksTask().execute();
 
         twoPanes = (findViewById(R.id.bookList) != null);
 
@@ -45,8 +57,8 @@ public class MainActivity extends FragmentActivity {
                     .commit();
 
             ListView bookList = findViewById(R.id.bookList);
-            BookAdapter adapter = new BookAdapter(this, books);
-            bookList.setAdapter(adapter);
+            bAdapter = new BookAdapter(this, books);
+            bookList.setAdapter(bAdapter);
 
             bookList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
@@ -63,29 +75,10 @@ public class MainActivity extends FragmentActivity {
                     .commit();
             ViewPager pager = findViewById(R.id.bookPager);
 
-            PageAdapter adapter = new PageAdapter(manager, this, books);
-            pager.setAdapter(adapter);
+            pAdapter = new PageAdapter(manager, this, books);
+            pager.setAdapter(pAdapter);
         }
 
-    }
-
-    public class Book {
-        private String title, author, coverURL;
-        private int id, published;
-
-        public Book(String title, String author, String coverURL, int id, int published) {
-            this.title = title;
-            this.author = author;
-            this.coverURL = coverURL;
-            this.id = id;
-            this.published = published;
-        }
-
-        public String getTitle() { return title; }
-        public String getAuthor() { return author; }
-        public String getCoverURL() { return coverURL; }
-        public int getId() { return id; }
-        public int getPublished() { return published; }
     }
 
     public class BookAdapter extends BaseAdapter {
@@ -124,6 +117,11 @@ public class MainActivity extends FragmentActivity {
             bookName.setText(title);
             return convertView;
         }
+
+        @Override
+        public void notifyDataSetChanged() {
+            super.notifyDataSetChanged();
+        }
     }
 
     public class PageAdapter extends FragmentPagerAdapter {
@@ -146,6 +144,53 @@ public class MainActivity extends FragmentActivity {
             return books.size();
         }
 
+        @Override
+        public void notifyDataSetChanged() {
+            super.notifyDataSetChanged();
+        }
+    }
 
+    public class GetBooksTask extends AsyncTask<String, Void, Void> {
+        @Override
+        protected Void doInBackground(String... search) {
+            try {
+                books.removeAll(books);
+                URL url;
+                if (search.length > 0) {
+                    url = new URL("https://kamorris.com/lab/audlib/booksearch.php?search=" + search[0]);
+                } else {
+                    url = new URL("https://kamorris.com/lab/audlib/booksearch.php");
+                }
+                URLConnection connection = url.openConnection();
+                connection.setConnectTimeout(2000);
+                InputStream stream = connection.getInputStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"), 8);
+                StringBuilder builder = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    builder.append(line + "\n");
+                }
+                JSONArray array = new JSONArray(builder.toString());
+                for (int i = 0; i < array.length(); i++) {
+                    JSONObject object = array.getJSONObject(i);
+                    Book newBook = new Book(object.getString("title"), object.getString("author"), object.getString("cover_url"), object.getInt("book_id"), object.getInt("published"));
+                    books.add(newBook);
+                }
+                stream.close();
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void a) {
+            if (pAdapter != null) {
+                pAdapter.notifyDataSetChanged();
+            }
+            if (bAdapter != null) {
+                bAdapter.notifyDataSetChanged();
+            }
+        }
     }
 }
