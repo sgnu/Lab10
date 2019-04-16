@@ -3,6 +3,7 @@ package edu.temple.bookcase;
 public class Book {
     private String title, author, coverURL;
     private int id, published;
+    private int duration = 0;
 
     public Book(String title, String author, String coverURL, int id, int published) {
         this.title = title;
@@ -17,4 +18,5 @@ public class Book {
     public String getCoverURL() { return coverURL; }
     public int getId() { return id; }
     public int getPublished() { return published; }
+    public int getDuration() { return duration;}
 }
