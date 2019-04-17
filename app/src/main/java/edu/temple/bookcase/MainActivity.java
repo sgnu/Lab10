@@ -39,6 +39,7 @@ import edu.temple.audiobookplayer.AudiobookService;
 public class MainActivity extends FragmentActivity {
 
     ArrayList<Book> books = new ArrayList<>();
+    int bookPlaying;
     boolean twoPanes;
     final FragmentManager manager = getSupportFragmentManager();
     PageAdapter pAdapter;
@@ -69,6 +70,8 @@ public class MainActivity extends FragmentActivity {
         bindService(new Intent(MainActivity.this, AudiobookService.class), sConn, Context.BIND_AUTO_CREATE);
 
         registerReceiver(new PlayReceiver(), new IntentFilter("edu.temple.bookcase.PLAY_BOOK"));
+        registerReceiver(new PauseReceiver(), new IntentFilter("edu.temple.bookcase.PAUSE_BOOK"));
+        registerReceiver(new StopReceiver(), new IntentFilter("edu.temple.bookcase.STOP_BOOK"));
 
         new GetBooksTask().execute();
 
@@ -121,6 +124,7 @@ public class MainActivity extends FragmentActivity {
     protected void onDestroy() {
         super.onDestroy();
         stopService(new Intent(getBaseContext(), edu.temple.audiobookplayer.AudiobookService.class));
+        unbindService(sConn);
     }
 
     private class BookAdapter extends BaseAdapter {
@@ -196,15 +200,34 @@ public class MainActivity extends FragmentActivity {
     }
 
     private class PlayReceiver extends BroadcastReceiver {
-
         @Override
         public void onReceive(Context context, Intent intent) {
             int bookId = intent.getIntExtra("bookId", 1);
-            if (binder != null)
-                binder.play(bookId);
+            if (binder != null) {
+                binder.play(bookId, intent.getIntExtra("position", 0));
+                bookPlaying = bookId;
+            }
             System.out.println(intent);
         }
     }
+
+    private class PauseReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (binder != null)
+                binder.pause();
+        }
+    }
+
+    private class StopReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (binder != null)
+                binder.stop();
+        }
+    }
+
+
 
     public class GetBooksTask extends AsyncTask<String, Void, Void> {
         @Override

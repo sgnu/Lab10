@@ -1,6 +1,8 @@
 package edu.temple.bookcase;
 
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -19,6 +21,7 @@ import com.squareup.picasso.Picasso;
  */
 public class BookDetailsFragment extends Fragment {
 
+    SeekBar seekBar;
 
     public BookDetailsFragment() {
         // Required empty public constructor
@@ -44,12 +47,15 @@ public class BookDetailsFragment extends Fragment {
         View inflated = inflater.inflate(R.layout.fragment_book_details, container, false);
 
         if (getArguments() != null) {
+            seekBar = inflated.findViewById(R.id.seekBar);
+
             ((TextView) inflated.findViewById(R.id.detailTitle)).setText(getArguments().getString("bookTitle"));
             ((TextView) inflated.findViewById(R.id.detailAuthor)).setText(getArguments().getString("bookAuthor"));
             Picasso.get().load(getArguments().getString("bookCover")).into((ImageView) inflated.findViewById(R.id.detailImage));
             ((TextView) inflated.findViewById(R.id.detailId)).setText(String.valueOf(getArguments().getInt("bookId")));
             ((TextView) inflated.findViewById(R.id.detailPublished)).setText(getArguments().getString("bookPublished"));
-            ((SeekBar) inflated.findViewById(R.id.seekBar)).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+//            seekBar.setMax(getArguments().getInt("duration"));
+            seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
@@ -57,12 +63,14 @@ public class BookDetailsFragment extends Fragment {
 
                 @Override
                 public void onStartTrackingTouch(SeekBar seekBar) {
-
+//                    getContext().sendBroadcast(new Intent("edu.temple.bookcase.PAUSE_BOOK"));
                 }
 
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
-
+                    Intent intent = new Intent("edu.temple.bookcase.SEEK_BOOK");
+                    intent.putExtra("position", seekBar.getProgress());
+                    getContext().sendBroadcast(intent);
                 }
             });
             inflated.findViewById(R.id.play).setOnClickListener(new View.OnClickListener() {
@@ -71,13 +79,31 @@ public class BookDetailsFragment extends Fragment {
                     Intent intent = new Intent();
                     intent.setAction("edu.temple.bookcase.PLAY_BOOK");
                     intent.putExtra("bookId", getArguments().getInt("bookId"));
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     getContext().sendBroadcast(intent);
+                }
+            });
+            inflated.findViewById(R.id.pause).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    getContext().sendBroadcast(new Intent("edu.temple.bookcase.PAUSE_BOOK"));
+                }
+            });
+            inflated.findViewById(R.id.stop).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    getContext().sendBroadcast(new Intent("edu.temple.bookcase.STOP_BOOK"));
                 }
             });
         }
         // Inflate the layout for this fragment
         return inflated;
+    }
+
+    private class ProgressReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+        }
     }
 
 }
