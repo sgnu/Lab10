@@ -19,6 +19,7 @@
                 <action android:name="edu.temple.bookcase.PAUSE_BOOK" />
                 <action android:name="edu.temple.bookcase.STOP_BOOK" />
                 <action android:name="edu.temple.bookcase.SEEK_BOOK" />
+                <action android:name="edu.temple.bookcase.PROGRESS_UPDATE" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>

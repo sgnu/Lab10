@@ -7,7 +7,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -46,11 +48,54 @@ public class MainActivity extends FragmentActivity {
     BookAdapter bAdapter;
     AudiobookService audioService;
     AudiobookService.MediaControlBinder binder;
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            Intent intent = new Intent("edu.temple.bookcase.PROGRESS_UPDATE");
+            intent.putExtra("position", msg.what);
+            intent.putExtra("bookId", bookPlaying);
+            MainActivity.this.sendBroadcast(intent);
+        }
+    };
+
+    BroadcastReceiver playReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int bookId = intent.getIntExtra("bookId", 1);
+            if (binder != null) {
+                binder.setProgressHandler(handler);
+                binder.play(bookId, intent.getIntExtra("position", 0));
+                bookPlaying = bookId;
+            }
+            System.out.println(intent);
+        }
+    };
+    BroadcastReceiver pauseReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (binder != null)
+                binder.pause();
+        }
+    };
+    BroadcastReceiver stopReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (binder != null)
+                binder.stop();
+        }
+    };
+    BroadcastReceiver seekReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (binder != null)
+                binder.seekTo(intent.getIntExtra("position", 0));
+        }
+    };
+
     ServiceConnection sConn = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             binder = (AudiobookService.MediaControlBinder) service;
-
         }
 
         @Override
@@ -69,9 +114,10 @@ public class MainActivity extends FragmentActivity {
         startService(new Intent(MainActivity.this, edu.temple.audiobookplayer.AudiobookService.class));
         bindService(new Intent(MainActivity.this, AudiobookService.class), sConn, Context.BIND_AUTO_CREATE);
 
-        registerReceiver(new PlayReceiver(), new IntentFilter("edu.temple.bookcase.PLAY_BOOK"));
-        registerReceiver(new PauseReceiver(), new IntentFilter("edu.temple.bookcase.PAUSE_BOOK"));
-        registerReceiver(new StopReceiver(), new IntentFilter("edu.temple.bookcase.STOP_BOOK"));
+        registerReceiver(playReceiver, new IntentFilter("edu.temple.bookcase.PLAY_BOOK"));
+        registerReceiver(pauseReceiver, new IntentFilter("edu.temple.bookcase.PAUSE_BOOK"));
+        registerReceiver(stopReceiver, new IntentFilter("edu.temple.bookcase.STOP_BOOK"));
+        registerReceiver(seekReceiver, new IntentFilter("edu.temple.bookcase.SEEK_BOOK"));
 
         new GetBooksTask().execute();
 
@@ -125,6 +171,10 @@ public class MainActivity extends FragmentActivity {
         super.onDestroy();
         stopService(new Intent(getBaseContext(), edu.temple.audiobookplayer.AudiobookService.class));
         unbindService(sConn);
+        unregisterReceiver(playReceiver);
+        unregisterReceiver(pauseReceiver);
+        unregisterReceiver(stopReceiver);
+        unregisterReceiver(seekReceiver);
     }
 
     private class BookAdapter extends BaseAdapter {
@@ -199,36 +249,6 @@ public class MainActivity extends FragmentActivity {
         }
     }
 
-    private class PlayReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            int bookId = intent.getIntExtra("bookId", 1);
-            if (binder != null) {
-                binder.play(bookId, intent.getIntExtra("position", 0));
-                bookPlaying = bookId;
-            }
-            System.out.println(intent);
-        }
-    }
-
-    private class PauseReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (binder != null)
-                binder.pause();
-        }
-    }
-
-    private class StopReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (binder != null)
-                binder.stop();
-        }
-    }
-
-
-
     public class GetBooksTask extends AsyncTask<String, Void, Void> {
         @Override
         protected Void doInBackground(String... search) {
@@ -252,7 +272,7 @@ public class MainActivity extends FragmentActivity {
                 JSONArray array = new JSONArray(builder.toString());
                 for (int i = 0; i < array.length(); i++) {
                     JSONObject object = array.getJSONObject(i);
-                    Book newBook = new Book(object.getString("title"), object.getString("author"), object.getString("cover_url"), object.getInt("book_id"), object.getInt("published"));
+                    Book newBook = new Book(object.getString("title"), object.getString("author"), object.getString("cover_url"), object.getInt("book_id"), object.getInt("published"), object.getInt("duration"));
                     books.add(newBook);
                 }
                 stream.close();

@@ -54,7 +54,7 @@ public class BookDetailsFragment extends Fragment {
             Picasso.get().load(getArguments().getString("bookCover")).into((ImageView) inflated.findViewById(R.id.detailImage));
             ((TextView) inflated.findViewById(R.id.detailId)).setText(String.valueOf(getArguments().getInt("bookId")));
             ((TextView) inflated.findViewById(R.id.detailPublished)).setText(getArguments().getString("bookPublished"));
-//            seekBar.setMax(getArguments().getInt("duration"));
+            seekBar.setMax(getArguments().getInt("duration"));
             seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -63,7 +63,7 @@ public class BookDetailsFragment extends Fragment {
 
                 @Override
                 public void onStartTrackingTouch(SeekBar seekBar) {
-//                    getContext().sendBroadcast(new Intent("edu.temple.bookcase.PAUSE_BOOK"));
+
                 }
 
                 @Override

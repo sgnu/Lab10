@@ -5,12 +5,13 @@ public class Book {
     private int id, published;
     private int duration = 0;
 
-    public Book(String title, String author, String coverURL, int id, int published) {
+    public Book(String title, String author, String coverURL, int id, int published, int duration) {
         this.title = title;
         this.author = author;
         this.coverURL = coverURL;
         this.id = id;
         this.published = published;
+        this.duration = duration;
     }
 
     public String getTitle() { return title; }
