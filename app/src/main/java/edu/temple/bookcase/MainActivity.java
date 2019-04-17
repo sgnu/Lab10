@@ -88,7 +88,8 @@ public class MainActivity extends FragmentActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (binder != null)
-                binder.seekTo(intent.getIntExtra("position", 0));
+                if (intent.getIntExtra("bookId", 0) == bookPlaying)
+                    binder.seekTo(intent.getIntExtra("position", 0));
         }
     };
 
@@ -292,4 +293,5 @@ public class MainActivity extends FragmentActivity {
             }
         }
     }
+
 }

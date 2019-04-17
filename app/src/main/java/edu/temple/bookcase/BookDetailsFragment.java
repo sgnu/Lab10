@@ -4,7 +4,9 @@ package edu.temple.bookcase;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +24,7 @@ import com.squareup.picasso.Picasso;
 public class BookDetailsFragment extends Fragment {
 
     SeekBar seekBar;
+    BroadcastReceiver progressReceiver;
 
     public BookDetailsFragment() {
         // Required empty public constructor
@@ -48,6 +51,15 @@ public class BookDetailsFragment extends Fragment {
 
         if (getArguments() != null) {
             seekBar = inflated.findViewById(R.id.seekBar);
+            progressReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    if (getArguments().getInt("bookId") == intent.getIntExtra("bookId", 0))
+                        seekBar.setProgress(intent.getIntExtra("position", 0));
+                }
+            };
+
+            getActivity().registerReceiver(progressReceiver, new IntentFilter("edu.temple.bookcase.PROGRESS_UPDATE"));
 
             ((TextView) inflated.findViewById(R.id.detailTitle)).setText(getArguments().getString("bookTitle"));
             ((TextView) inflated.findViewById(R.id.detailAuthor)).setText(getArguments().getString("bookAuthor"));
@@ -70,6 +82,7 @@ public class BookDetailsFragment extends Fragment {
                 public void onStopTrackingTouch(SeekBar seekBar) {
                     Intent intent = new Intent("edu.temple.bookcase.SEEK_BOOK");
                     intent.putExtra("position", seekBar.getProgress());
+                    intent.putExtra("bookId", getArguments().getInt("bookId"));
                     getContext().sendBroadcast(intent);
                 }
             });
@@ -99,11 +112,9 @@ public class BookDetailsFragment extends Fragment {
         return inflated;
     }
 
-    private class ProgressReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-        }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        getActivity().unregisterReceiver(progressReceiver);
     }
-
 }
