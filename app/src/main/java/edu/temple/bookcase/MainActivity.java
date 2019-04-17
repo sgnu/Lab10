@@ -1,12 +1,17 @@
 package edu.temple.bookcase;
 
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.os.AsyncTask;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
@@ -29,6 +34,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 
+import edu.temple.audiobookplayer.AudiobookService;
+
 public class MainActivity extends FragmentActivity {
 
     ArrayList<Book> books = new ArrayList<>();
@@ -36,11 +43,32 @@ public class MainActivity extends FragmentActivity {
     final FragmentManager manager = getSupportFragmentManager();
     PageAdapter pAdapter;
     BookAdapter bAdapter;
+    AudiobookService audioService;
+    AudiobookService.MediaControlBinder binder;
+    ServiceConnection sConn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            binder = (AudiobookService.MediaControlBinder) service;
+
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        audioService = new AudiobookService();
+
+        startService(new Intent(MainActivity.this, edu.temple.audiobookplayer.AudiobookService.class));
+        bindService(new Intent(MainActivity.this, AudiobookService.class), sConn, Context.BIND_AUTO_CREATE);
+
+        registerReceiver(new PlayReceiver(), new IntentFilter("edu.temple.bookcase.PLAY_BOOK"));
 
         new GetBooksTask().execute();
 
@@ -87,6 +115,12 @@ public class MainActivity extends FragmentActivity {
                 new GetBooksTask().execute(((EditText) findViewById(R.id.editText)).getText().toString());
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopService(new Intent(getBaseContext(), edu.temple.audiobookplayer.AudiobookService.class));
     }
 
     private class BookAdapter extends BaseAdapter {
@@ -158,6 +192,17 @@ public class MainActivity extends FragmentActivity {
         @Override
         public void notifyDataSetChanged() {
             super.notifyDataSetChanged();
+        }
+    }
+
+    private class PlayReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int bookId = intent.getIntExtra("bookId", 1);
+            if (binder != null)
+                binder.play(bookId);
+            System.out.println(intent);
         }
     }
 

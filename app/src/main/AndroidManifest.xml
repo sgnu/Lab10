@@ -15,10 +15,15 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                <action android:name="edu.temple.bookcase.PLAY_BOOK" />
+                <action android:name="edu.temple.bookcase.PAUSE_BOOK" />
+                <action android:name="edu.temple.bookcase.STOP_BOOK" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service android:name="edu.temple.audiobookplayer.AudiobookService"
+            android:label="AudiobookService"></service>
     </application>
 
 </manifest>
