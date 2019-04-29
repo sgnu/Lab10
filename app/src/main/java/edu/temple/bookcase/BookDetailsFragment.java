@@ -89,7 +89,9 @@ public class BookDetailsFragment extends Fragment {
             seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
+                    if (seekBar.getProgress() > 1) {
+                        getArguments().putInt("position", seekBar.getProgress());
+                    }
                 }
 
                 @Override
@@ -118,7 +120,10 @@ public class BookDetailsFragment extends Fragment {
             inflated.findViewById(R.id.pause).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    getContext().sendBroadcast(new Intent("edu.temple.bookcase.PAUSE_BOOK"));
+                    Intent intent = new Intent("edu.temple.bookcase.PAUSE_BOOK");
+                    intent.putExtra("bookId", getArguments().getInt("bookId"));
+                    intent.putExtra("position", getArguments().getInt("position"));
+                    getContext().sendBroadcast(intent);
                 }
             });
             inflated.findViewById(R.id.stop).setOnClickListener(new View.OnClickListener() {

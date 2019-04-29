@@ -32,6 +32,7 @@ import org.json.JSONObject;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -66,9 +67,27 @@ public class MainActivity extends FragmentActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             int bookId = intent.getIntExtra("bookId", 0);
+            int position;
+            if (bookId == bookPlaying)
+                position = intent.getIntExtra("position", 0);
+            else {
+                try {
+                    FileInputStream inputStream = context.openFileInput(String.valueOf(bookId));
+                    InputStreamReader reader = new InputStreamReader(inputStream);
+                    BufferedReader bufferedReader = new BufferedReader(reader);
+                    position = Integer.parseInt(bufferedReader.readLine());
+                } catch (Exception e) {
+                    position = 0;
+                }
+            }
             if (binder != null) {
+                File book = new File(getFilesDir(), "Book" + bookId + ".mp3");
                 binder.setProgressHandler(handler);
-                binder.play(bookId, intent.getIntExtra("position", 0));
+                if (book.exists()) {
+                    binder.play(book, position);
+                } else {
+                    binder.play(bookId, position);
+                }
                 bookPlaying = bookId;
             }
             System.out.println(intent);
@@ -77,16 +96,19 @@ public class MainActivity extends FragmentActivity {
     BroadcastReceiver pauseReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            int bookId = intent.getIntExtra("bookId", 0);
+            int position = intent.getIntExtra("position", 0);
             if (binder != null)
                 binder.pause();
+            writePosition(bookId, position);
         }
     };
     BroadcastReceiver stopReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            int bookId = intent.getIntExtra("bookId", 0);
             if (binder != null)
                 binder.stop();
+            writePosition(intent.getIntExtra("bookId", 0), 0);
         }
     };
     BroadcastReceiver seekReceiver = new BroadcastReceiver() {
@@ -170,6 +192,24 @@ public class MainActivity extends FragmentActivity {
                 new GetBooksTask().execute(((EditText) findViewById(R.id.editText)).getText().toString());
             }
         });
+    }
+
+    private void writePosition(int bookId, int position) {
+        String file = String.valueOf(bookId);
+        String stringPosition;
+        if (position > 10) {
+            stringPosition = String.valueOf(position - 10);
+        } else {
+            stringPosition = "0";
+        }
+        System.out.println(stringPosition);
+        try {
+            FileOutputStream outputStream = openFileOutput(file, Context.MODE_PRIVATE);
+            outputStream.write(stringPosition.getBytes());
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
