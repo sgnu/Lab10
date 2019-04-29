@@ -29,9 +29,13 @@ import android.widget.TextView;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -185,6 +189,12 @@ public class MainActivity extends FragmentActivity {
 
         if (seekReceiver != null)
         unregisterReceiver(seekReceiver);
+
+        try {
+            pAdapter.notifyDataSetChanged();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private class BookAdapter extends BaseAdapter {
@@ -283,11 +293,17 @@ public class MainActivity extends FragmentActivity {
                 for (int i = 0; i < array.length(); i++) {
                     JSONObject object = array.getJSONObject(i);
                     Book newBook = new Book(object.getString("title"), object.getString("author"), object.getString("cover_url"), object.getInt("book_id"), object.getInt("published"), object.getInt("duration"));
+                    File file = new File(MainActivity.this.getFilesDir(), "Book" + newBook.getId() + ".mp3");
+                    if (file.exists()) {
+                        newBook.setDownloaded(true);
+                    } else {
+                        newBook.setDownloaded(false);
+                    }
                     books.add(newBook);
                 }
                 stream.close();
             } catch (Exception e) {
-                System.out.println(e);
+                e.printStackTrace();
             }
             return null;
         }

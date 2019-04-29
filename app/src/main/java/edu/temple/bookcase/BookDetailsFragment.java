@@ -7,10 +7,13 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -18,13 +21,22 @@ import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+
 /**
  * A simple {@link Fragment} subclass.
  */
 public class BookDetailsFragment extends Fragment {
 
     SeekBar seekBar;
+    Button downloadButton;
     BroadcastReceiver progressReceiver;
+    Bundle arguments;
 
     public BookDetailsFragment() {
         // Required empty public constructor
@@ -39,6 +51,7 @@ public class BookDetailsFragment extends Fragment {
         args.putInt("bookId", (book.getId()));
         args.putString("bookPublished", String.valueOf(book.getPublished()));
         args.putInt("duration", book.getDuration());
+        args.putBoolean("downloaded", book.getDownloaded());
         fragment.setArguments(args);
 
         return fragment;
@@ -50,7 +63,9 @@ public class BookDetailsFragment extends Fragment {
         View inflated = inflater.inflate(R.layout.fragment_book_details, container, false);
 
         if (getArguments() != null) {
+            arguments = getArguments();
             seekBar = inflated.findViewById(R.id.seekBar);
+            downloadButton = inflated.findViewById(R.id.download);
             progressReceiver = new BroadcastReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
@@ -60,6 +75,8 @@ public class BookDetailsFragment extends Fragment {
             };
 
             getActivity().registerReceiver(progressReceiver, new IntentFilter("edu.temple.bookcase.PROGRESS_UPDATE"));
+
+            updateDownloadButton();
 
             ((TextView) inflated.findViewById(R.id.detailTitle)).setText(getArguments().getString("bookTitle"));
             ((TextView) inflated.findViewById(R.id.detailAuthor)).setText(getArguments().getString("bookAuthor"));
@@ -121,5 +138,75 @@ public class BookDetailsFragment extends Fragment {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void updateDownloadButton() {
+        if (getArguments().getBoolean("downloaded")) {
+            downloadButton.setText("Delete");
+            downloadButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(getContext(), "This would be delete", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            downloadButton.setText("Download");
+            downloadButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    downloadBook(arguments.getInt("bookId"));
+                }
+            });
+        }
+    }
+
+    private void downloadBook(int bookId) {
+        DownloadBookThread thread = new DownloadBookThread(bookId, getContext());
+        thread.start();
+        try {
+            Thread.sleep(1000);
+            updateDownloadButton();
+            System.out.println("Thread finished sleeping");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private class DownloadBookThread extends Thread {
+        private int bookId;
+        private Context context;
+
+        DownloadBookThread(int bookId, Context context) {
+            this.bookId = bookId;
+            this.context = context;
+        }
+
+        public void run() {
+            String filename = "Book" + this.bookId + ".mp3";
+            int count;
+            try {
+                URL url = new URL("https://kamorris.com/lab/audlib/download.php?id=" + bookId);
+
+                InputStream input = new BufferedInputStream(url.openStream(), 8192);
+                File file = new File(context.getFilesDir(), filename);
+
+                OutputStream output = new FileOutputStream(file.getPath());
+
+                byte data[] = new byte[1024];
+
+                while ((count = input.read(data)) != -1) {
+                    output.write(data, 0, count);
+                }
+
+                output.flush();
+                output.close();
+                input.close();
+
+                System.out.println("Finished downloading book");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
     }
 }

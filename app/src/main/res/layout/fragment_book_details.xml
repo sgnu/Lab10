@@ -64,6 +64,11 @@
             android:layout_height="56dp"
             android:max="100" />
 
+        <Button
+            android:id="@+id/download"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
         <ImageView
             android:id="@+id/detailImage"
             android:layout_width="match_parent"
