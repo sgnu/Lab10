@@ -18,10 +18,6 @@ public class Book {
         this.downloaded = bool;
     }
 
-    public void setPosition(int position) {
-        this.position = position - 30;
-    }
-
     public String getTitle() { return title; }
     public String getAuthor() { return author; }
     public String getCoverURL() { return coverURL; }

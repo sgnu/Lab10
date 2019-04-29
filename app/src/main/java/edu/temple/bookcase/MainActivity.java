@@ -68,7 +68,7 @@ public class MainActivity extends FragmentActivity {
             int bookId = intent.getIntExtra("bookId", 0);
             int position;
             if (bookId == bookPlaying)
-                position = intent.getIntExtra("position", 0);
+                position = intent.getIntExtra("position", 0) - 10;
             else {
                 try {
                     FileInputStream inputStream = context.openFileInput(String.valueOf(bookId));
