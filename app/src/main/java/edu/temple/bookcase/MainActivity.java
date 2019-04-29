@@ -171,10 +171,19 @@ public class MainActivity extends FragmentActivity {
     protected void onDestroy() {
         super.onDestroy();
         stopService(new Intent(getBaseContext(), edu.temple.audiobookplayer.AudiobookService.class));
-        unbindService(sConn);
+        if (sConn != null)
+            unbindService(sConn);
+
+        if (playReceiver != null)
         unregisterReceiver(playReceiver);
+
+        if (pauseReceiver != null)
         unregisterReceiver(pauseReceiver);
+
+        if (stopReceiver != null)
         unregisterReceiver(stopReceiver);
+
+        if (seekReceiver != null)
         unregisterReceiver(seekReceiver);
     }
 
