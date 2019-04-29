@@ -52,6 +52,7 @@ public class BookDetailsFragment extends Fragment {
         args.putInt("bookId", (book.getId()));
         args.putString("bookPublished", String.valueOf(book.getPublished()));
         args.putInt("duration", book.getDuration());
+        args.putInt("position", book.getPosition());
         args.putBoolean("downloaded", book.getDownloaded());
         fragment.setArguments(args);
 
@@ -110,6 +111,7 @@ public class BookDetailsFragment extends Fragment {
                     Intent intent = new Intent();
                     intent.setAction("edu.temple.bookcase.PLAY_BOOK");
                     intent.putExtra("bookId", getArguments().getInt("bookId"));
+                    intent.putExtra("position", getArguments().getInt("position"));
                     getContext().sendBroadcast(intent);
                 }
             });
@@ -122,7 +124,7 @@ public class BookDetailsFragment extends Fragment {
             inflated.findViewById(R.id.stop).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    getContext().sendBroadcast(new Intent("edu.temple.bookcase.STOP_BOOK"));
+                    getContext().sendBroadcast(new Intent("edu.temple.bookcase.STOP_BOOK").putExtra("bookId", getArguments().getInt("bookId")));
                 }
             });
         }

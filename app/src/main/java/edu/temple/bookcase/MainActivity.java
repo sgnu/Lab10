@@ -65,7 +65,7 @@ public class MainActivity extends FragmentActivity {
     BroadcastReceiver playReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            int bookId = intent.getIntExtra("bookId", 1);
+            int bookId = intent.getIntExtra("bookId", 0);
             if (binder != null) {
                 binder.setProgressHandler(handler);
                 binder.play(bookId, intent.getIntExtra("position", 0));
@@ -84,6 +84,7 @@ public class MainActivity extends FragmentActivity {
     BroadcastReceiver stopReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            int bookId = intent.getIntExtra("bookId", 0);
             if (binder != null)
                 binder.stop();
         }

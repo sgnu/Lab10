@@ -2,8 +2,7 @@ package edu.temple.bookcase;
 
 public class Book {
     private String title, author, coverURL;
-    private int id, published;
-    private int duration = 0;
+    private int id, published, duration, position;
     private boolean downloaded;
 
     public Book(String title, String author, String coverURL, int id, int published, int duration) {
@@ -19,11 +18,16 @@ public class Book {
         this.downloaded = bool;
     }
 
+    public void setPosition(int position) {
+        this.position = position - 30;
+    }
+
     public String getTitle() { return title; }
     public String getAuthor() { return author; }
     public String getCoverURL() { return coverURL; }
     public int getId() { return id; }
     public int getPublished() { return published; }
-    public int getDuration() { return duration;}
+    public int getDuration() { return duration; }
+    public int getPosition() { return position; }
     public boolean getDownloaded() { return downloaded; }
 }
