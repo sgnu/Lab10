@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -141,12 +142,14 @@ public class BookDetailsFragment extends Fragment {
     }
 
     private void updateDownloadButton() {
-        if (getArguments().getBoolean("downloaded")) {
+        if (getArguments().getBoolean("downloaded") || (new File(getContext().getFilesDir(), "Book" + getArguments().getInt("bookId") + ".mp3")).exists()) {
             downloadButton.setText("Delete");
             downloadButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(getContext(), "This would be delete", Toast.LENGTH_SHORT).show();
+                    (new File(getContext().getFilesDir(), "Book" + getArguments().getInt("bookId") + ".mp3")).delete();
+                    Toast.makeText(getContext(), "Book deleted", Toast.LENGTH_SHORT).show();
+                    updateDownloadButton();
                 }
             });
         } else {
@@ -161,27 +164,27 @@ public class BookDetailsFragment extends Fragment {
     }
 
     private void downloadBook(int bookId) {
-        DownloadBookThread thread = new DownloadBookThread(bookId, getContext());
-        thread.start();
-        try {
-            Thread.sleep(1000);
-            updateDownloadButton();
-            System.out.println("Thread finished sleeping");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        DownloadBookTask task = new DownloadBookTask(bookId, getContext());
+        task.execute();
+        updateDownloadButton();
     }
 
-    private class DownloadBookThread extends Thread {
+    private class DownloadBookTask extends AsyncTask<String, String, String> {
         private int bookId;
         private Context context;
 
-        DownloadBookThread(int bookId, Context context) {
+        DownloadBookTask(int bookId, Context context) {
             this.bookId = bookId;
             this.context = context;
         }
 
-        public void run() {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected String doInBackground(String... strings) {
             String filename = "Book" + this.bookId + ".mp3";
             int count;
             try {
@@ -206,7 +209,13 @@ public class BookDetailsFragment extends Fragment {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            return null;
         }
 
+        @Override
+        protected void onPostExecute(String s) {
+            Toast.makeText(context, "Download finished", Toast.LENGTH_LONG).show();
+            updateDownloadButton();
+        }
     }
 }
