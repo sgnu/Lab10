@@ -33,13 +33,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <ImageView
-            android:id="@+id/detailImage"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:contentDescription="Image"
-            tools:src="@tools:sample/avatars" />
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -70,6 +63,13 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:max="100" />
+
+        <ImageView
+            android:id="@+id/detailImage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:contentDescription="Image"
+            tools:src="@tools:sample/avatars" />
     </LinearLayout>
 
 </FrameLayout>
