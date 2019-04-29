@@ -20,7 +20,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <fragment
-            android:id="@+id/detailFrag"
+            android:id="@+id/fragment3"
             android:name="edu.temple.bookcase.BookDetailsFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
@@ -41,7 +41,7 @@
         app:layout_constraintVertical_bias="0.0">
 
         <fragment
-            android:id="@+id/listFrag"
+            android:id="@+id/fragment2"
             android:name="edu.temple.bookcase.BookListFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />

@@ -7,10 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -62,7 +59,7 @@ public class BookDetailsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View inflated = inflater.inflate(R.layout.fragment_book_details, container, false);
+        View inflated = inflater.inflate(R.layout.fragment_book_details, null);
 
         if (getArguments() != null) {
             arguments = getArguments();
@@ -76,7 +73,11 @@ public class BookDetailsFragment extends Fragment {
                 }
             };
 
-            getActivity().registerReceiver(progressReceiver, new IntentFilter("edu.temple.bookcase.PROGRESS_UPDATE"));
+            try {
+                getActivity().registerReceiver(progressReceiver, new IntentFilter("edu.temple.bookcase.PROGRESS_UPDATE"));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             updateDownloadButton();
 

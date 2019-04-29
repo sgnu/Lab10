@@ -29,14 +29,12 @@ import android.widget.TextView;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -45,6 +43,7 @@ import edu.temple.audiobookplayer.AudiobookService;
 
 public class MainActivity extends FragmentActivity {
 
+    String search;
     ArrayList<Book> books = new ArrayList<>();
     int bookPlaying;
     boolean twoPanes;
@@ -76,6 +75,9 @@ public class MainActivity extends FragmentActivity {
                     InputStreamReader reader = new InputStreamReader(inputStream);
                     BufferedReader bufferedReader = new BufferedReader(reader);
                     position = Integer.parseInt(bufferedReader.readLine());
+
+                    if (bookPlaying != 0)
+                        writePosition(bookPlaying, intent.getIntExtra("position", 0));
                 } catch (Exception e) {
                     position = 0;
                 }
@@ -137,6 +139,11 @@ public class MainActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (savedInstanceState != null) {
+            search = savedInstanceState.getString("search");
+            bookPlaying = savedInstanceState.getInt("bookId");
+        }
+
         audioService = new AudiobookService();
 
         startService(new Intent(MainActivity.this, edu.temple.audiobookplayer.AudiobookService.class));
@@ -147,9 +154,11 @@ public class MainActivity extends FragmentActivity {
         registerReceiver(stopReceiver, new IntentFilter("edu.temple.bookcase.STOP_BOOK"));
         registerReceiver(seekReceiver, new IntentFilter("edu.temple.bookcase.SEEK_BOOK"));
 
-        new GetBooksTask().execute();
+        ((TextView) findViewById(R.id.editText)).setText(search);
 
-        twoPanes = (findViewById(R.id.bookList) != null);
+        new GetBooksTask().execute(((TextView) findViewById(R.id.editText)).getText().toString());
+
+        twoPanes = (findViewById(R.id.listContainer) != null);
 
         manager.findFragmentByTag("");
 
@@ -163,7 +172,8 @@ public class MainActivity extends FragmentActivity {
                     .addToBackStack(null)
                     .commit();
 
-            ListView bookList = findViewById(R.id.bookList);
+            ListView bookList = findViewById(R.id.listContainer).findViewById(R.id.bookList);
+            bookList.setSelection(bookPlaying);
             bAdapter = new BookAdapter(this, books);
             bookList.setAdapter(bAdapter);
 
@@ -178,7 +188,8 @@ public class MainActivity extends FragmentActivity {
             });
         } else {
             manager.beginTransaction()
-                    .add(R.id.pagerFragment, new PagerFragment())
+                    .add(R.id.pagerContainer, new PagerFragment())
+                    .addToBackStack(null)
                     .commit();
             ViewPager pager = findViewById(R.id.bookPager);
 
@@ -192,6 +203,20 @@ public class MainActivity extends FragmentActivity {
                 new GetBooksTask().execute(((EditText) findViewById(R.id.editText)).getText().toString());
             }
         });
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putString("search", ((TextView) findViewById(R.id.editText)).getText().toString());
+        savedInstanceState.putInt("bookId", bookPlaying);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        search = savedInstanceState.getString("search");
+        bookPlaying = savedInstanceState.getInt("bookId");
     }
 
     private void writePosition(int bookId, int position) {
